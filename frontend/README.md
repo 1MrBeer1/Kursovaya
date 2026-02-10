@@ -2,6 +2,15 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Windows note (path contains `!`)
+Webpack in CRA can fail if your absolute path contains `!` (reserved for loader syntax). If your project is in a folder like `D:\Projects!\...`, run via `subst`:
+
+```powershell
+subst K: "D:\Projects!\sharaje\Kursovaya\frontend"
+cd K:\
+npm start
+```
+
 ## Available Scripts
 
 In the project directory, you can run:

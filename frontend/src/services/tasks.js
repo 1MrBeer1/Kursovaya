@@ -11,3 +11,18 @@ export const updateTaskStatus = async (taskId, status) => {
   });
 };
 
+export const getTask = async (taskId) => {
+  const res = await api.get(`/tasks/${taskId}`);
+  return res.data;
+};
+
+export const getTaskMessages = async (taskId) => {
+  const res = await api.get(`/tasks/${taskId}/messages/`);
+  return res.data;
+};
+
+export const createTaskMessage = async (taskId, content) => {
+  const res = await api.post(`/tasks/${taskId}/messages/`, { content });
+  return res.data;
+};
+
