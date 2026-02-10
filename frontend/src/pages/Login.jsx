@@ -29,25 +29,44 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Вход</h2>
+    <div className="auth">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <h1 className="auth-title">Вход</h1>
+        <p className="auth-subtitle">
+          Введите логин и пароль, чтобы открыть доску задач.
+        </p>
 
-      <input
-        placeholder="Логин"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
+        <div className="field">
+          <div className="label">Логин</div>
+          <input
+            className="input"
+            placeholder="например: ivan"
+            autoComplete="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
 
-      <input
-        type="password"
-        placeholder="Пароль"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <div className="field">
+          <div className="label">Пароль</div>
+          <input
+            className="input"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <div className="auth-error">{error}</div>}
 
-      <button type="submit">Войти</button>
-    </form>
+        <div className="auth-actions">
+          <button className="btn btn--primary" type="submit">
+            Войти
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

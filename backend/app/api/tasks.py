@@ -27,6 +27,29 @@ def get_tasks(
         for t in tasks
     ]
 
+@router.get("/{task_id}")
+def get_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    status_obj = db.query(Status).filter(Status.id == task.status_id).first()
+    if not status_obj:
+        raise HTTPException(status_code=500, detail="Task has invalid status_id")
+
+    return {
+        "id": task.id,
+        "title": task.title,
+        "short_description": task.short_description,
+        "description": task.description,
+        "status": status_obj.name,
+        "created_at": task.created_at,
+        "updated_at": task.updated_at,
+    }
 
 @router.post("/", status_code=201)
 def create_task(

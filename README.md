@@ -5,7 +5,7 @@
 
 ## Стек технологий
 - Backend: FastAPI, SQLite
-- Frontend: React 18
+- Frontend: React
 - Auth: JWT
 
 ### Запуск backend
@@ -19,6 +19,19 @@ uvicorn app.main:app --reload
 cd frontend
 npm start
 ```
+
+#### Важно про путь с `!` (Windows)
+Create React App / Webpack не собирается, если в абсолютном пути к проекту есть `!` (например `D:\Projects!\...`).
+Если у вас такая папка, есть 2 варианта:
+
+```powershell
+# Вариант 1: открыть проект через подставной диск (пример: K:)
+subst K: "D:\Projects!\sharaje\Kursovaya\frontend"
+cd K:\
+npm start
+```
+
+или перенести проект в папку без `!`.
 
 ## проделанной работе
 
