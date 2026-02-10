@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { createTaskMessage, getTask, getTaskMessages } from "../services/tasks";
+import UserMenu from "../components/UserMenu";
 
 function formatTime(iso) {
   if (!iso) return "";
@@ -18,7 +19,7 @@ export default function TaskDetails() {
   const { id } = useParams();
   const taskId = useMemo(() => Number(id), [id]);
 
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const [task, setTask] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -86,16 +87,14 @@ export default function TaskDetails() {
             <button className="btn btn--ghost" type="button" onClick={() => navigate("/")}>
               Назад
             </button>
-            <button
-              className="btn btn--danger"
-              type="button"
-              onClick={() => {
+            <UserMenu
+              user={user}
+              onRefresh={() => load()}
+              onLogout={() => {
                 logout();
                 navigate("/login");
               }}
-            >
-              Выйти
-            </button>
+            />
           </div>
         </div>
       </div>
@@ -121,6 +120,14 @@ export default function TaskDetails() {
                   <div className="kv-row">
                     <div className="kv-key">Статус</div>
                     <div className="kv-val">{task?.status}</div>
+                  </div>
+                  <div className="kv-row">
+                    <div className="kv-key">Исполнитель</div>
+                    <div className="kv-val">{task?.assignee || "не назначен"}</div>
+                  </div>
+                  <div className="kv-row">
+                    <div className="kv-key">Постановщик</div>
+                    <div className="kv-val">{task?.created_by || "—"}</div>
                   </div>
                   <div className="kv-row">
                     <div className="kv-key">Кратко</div>

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_user
+from app.api.tasks import _can_view_task
 from app.models.message import Message
 from app.models.task import Task
 from app.models.user import User
@@ -19,6 +20,10 @@ def get_messages(
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
+    # доступ к сообщениям только если видна задача
+    if not _can_view_task(user, task, db):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     messages = (
         db.query(Message)
@@ -48,6 +53,9 @@ def create_message(
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+
+    if not _can_view_task(user, task, db):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     message = Message(
         content=data.content,

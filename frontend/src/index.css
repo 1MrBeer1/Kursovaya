@@ -149,6 +149,97 @@ pre {
   gap: 10px;
 }
 
+.user-chip {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: grid;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.user-chip__name {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.user-chip__role {
+  font-size: 12px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu__btn {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  align-items: center;
+  min-width: 150px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.user-menu__btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.user-menu__name {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.user-menu__role {
+  font-size: 12px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.user-menu__chevron {
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: rgba(15, 21, 34, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  min-width: 160px;
+  box-shadow: var(--shadow2);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.user-menu__item {
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-menu__item:hover,
+.user-menu__item:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
 /* Auth */
 .auth {
   min-height: 100vh;
@@ -223,6 +314,15 @@ pre {
   padding: 10px 12px;
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.90);
+}
+
+.auth-ok {
+  margin: 12px 0 0;
+  border: 1px solid rgba(134, 239, 172, 0.35);
+  background: rgba(134, 239, 172, 0.10);
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .auth-actions {
@@ -348,6 +448,10 @@ pre {
   transform: rotate(-0.4deg) scale(1.01);
   border-color: rgba(125, 211, 252, 0.35);
 }
+.task[data-foreign="true"] {
+  border-color: rgba(253, 224, 138, 0.35);
+  background: linear-gradient(180deg, rgba(253, 224, 138, 0.14), rgba(0, 0, 0, 0.18));
+}
 
 .task__handle {
   width: 34px;
@@ -383,6 +487,12 @@ pre {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
+}
+
+.task__assignee {
+  margin-top: 6px;
+  color: var(--muted2);
+  font-size: 12px;
 }
 
 .task__status {
@@ -423,6 +533,21 @@ pre {
   font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.2px;
+}
+
+.create {
+  margin: 0 0 16px;
+}
+
+.create__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.create__form {
+  display: grid;
+  gap: 10px;
 }
 
 .kv {
@@ -500,6 +625,40 @@ pre {
   height: 1px;
   background: rgba(255, 255, 255, 0.10);
   margin: 14px 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.users-table th,
+.users-table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.users-table th {
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.users-table .mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.users-table tr:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 @keyframes riseIn {

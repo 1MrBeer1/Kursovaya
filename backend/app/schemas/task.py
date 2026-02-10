@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -6,6 +7,7 @@ class TaskCreate(BaseModel):
     short_description: str
     description: str
     status_id: int
+    assignee_id: Optional[int] = None
 
 
 

@@ -26,6 +26,7 @@ export default function TaskCard({ task }) {
       style={style}
       className="task"
       data-dragging={isDragging ? "true" : "false"}
+      data-foreign={task.is_mine ? "false" : "true"}
       onClick={() => navigate(`/tasks/${task.id}`)}
     >
       <button
@@ -43,6 +44,9 @@ export default function TaskCard({ task }) {
       <div>
         <div className="task__title">{task.title}</div>
         <div className="task__desc">{task.short_description}</div>
+        <div className="task__assignee">
+          {task.assignee ? `Исполнитель: ${task.assignee}` : "Исполнитель не назначен"}
+        </div>
         <div className="task__status">{task.status}</div>
       </div>
     </div>

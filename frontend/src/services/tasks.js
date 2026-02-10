@@ -5,6 +5,11 @@ export const getTasks = async () => {
   return res.data;
 };
 
+export const createTask = async (payload) => {
+  const res = await api.post("/tasks/", payload);
+  return res.data;
+};
+
 export const updateTaskStatus = async (taskId, status) => {
   return api.patch(`/tasks/${taskId}/status`, {
     status: status
@@ -23,6 +28,11 @@ export const getTaskMessages = async (taskId) => {
 
 export const createTaskMessage = async (taskId, content) => {
   const res = await api.post(`/tasks/${taskId}/messages/`, { content });
+  return res.data;
+};
+
+export const getStatuses = async () => {
+  const res = await api.get("/statuses/");
   return res.data;
 };
 

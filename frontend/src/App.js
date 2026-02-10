@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Board from "./pages/Board";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import TaskDetails from "./pages/TaskDetails";
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -24,6 +25,15 @@ function App() {
           element={
             <ProtectedRoute>
               <TaskDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <Users />
             </ProtectedRoute>
           }
         />
