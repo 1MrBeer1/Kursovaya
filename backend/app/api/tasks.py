@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
 from app.models.task import Task
 from app.models.status import Status
-from app.schemas.task import TaskCreate, TaskStatusUpdate
+from app.schemas.task import TaskCreate, TaskStatusUpdate, TaskUpdate
 from app.models.user import User
 
 ROLE_RANK = {
@@ -163,4 +163,48 @@ def update_task_status(
     task.status_id = status_obj.id
     db.commit()
 
+    return {"status": "updated"}
+
+
+@router.patch("/{task_id}")
+def update_task(
+    task_id: int,
+    data: TaskUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if user.role not in ("manager", "ceo", "admin"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Проверка видимости для менеджеров/ниже
+    if not _can_view_task(user, task, db):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if data.status_id is not None:
+        status_obj = db.query(Status).filter(Status.id == data.status_id).first()
+        if not status_obj:
+            raise HTTPException(status_code=400, detail="Invalid status_id")
+        task.status_id = status_obj.id
+
+    if data.assignee_id is not None:
+        if data.assignee_id == 0:
+            task.assignee_id = None
+        else:
+            assignee = db.query(User).filter(User.id == data.assignee_id).first()
+            if not assignee:
+                raise HTTPException(status_code=400, detail="Invalid assignee_id")
+            task.assignee_id = assignee.id
+
+    if data.title is not None:
+        task.title = data.title
+    if data.short_description is not None:
+        task.short_description = data.short_description
+    if data.description is not None:
+        task.description = data.description
+
+    db.commit()
     return {"status": "updated"}

@@ -22,12 +22,8 @@ app = FastAPI(title="Task Manager API", version="1.0.0")
 # =========================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",  # если вдруг Vite
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,  # JWT передаётся в заголовке Authorization, куки не нужны
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -96,6 +96,11 @@ pre {
   background: linear-gradient(135deg, rgba(125, 211, 252, 0.22), rgba(167, 139, 250, 0.14));
 }
 
+.btn--wide {
+  min-width: 180px;
+  justify-content: center;
+}
+
 .btn--ghost {
   background: transparent;
 }
@@ -116,11 +121,12 @@ pre {
 }
 
 .topbar__inner {
-  padding: 16px 0;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  width: 100%;
 }
 
 .brand {
@@ -338,12 +344,42 @@ pre {
   padding: 20px 0 40px;
 }
 
+.board--with-sidebar .board__layout {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 16px;
+  align-items: start;
+  width: min(1500px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.board__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .board--with-sidebar .board__layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    order: 2;
+  }
+}
+
 .board__head {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
   margin: 18px 0 16px;
+}
+
+.board__actions {
+  margin-left: auto;
 }
 
 .board__title {
@@ -362,10 +398,11 @@ pre {
 .columns {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(280px, 1fr);
+  grid-auto-columns: 300px;
   gap: 14px;
   overflow-x: auto;
   padding-bottom: 12px;
+  justify-content: start;
 }
 
 .columns::-webkit-scrollbar {
@@ -383,7 +420,6 @@ pre {
   box-shadow: var(--shadow2);
   border-radius: var(--radius);
   padding: 14px;
-  min-height: 360px;
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
 }
 
@@ -417,6 +453,59 @@ pre {
   background: rgba(0, 0, 0, 0.22);
   padding: 6px 10px;
   border-radius: 999px;
+}
+
+.sidebar,
+.users-sidebar {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow2);
+  position: sticky;
+  top: 80px;
+  align-self: start;
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+}
+
+.sidebar__title,
+.users-sidebar__title {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  margin-bottom: 10px;
+}
+
+.sidebar__item,
+.users-sidebar__item {
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.sidebar__item[data-active="true"],
+.users-sidebar__item--active {
+  border-color: rgba(125, 211, 252, 0.35);
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.15), rgba(167, 139, 250, 0.10));
+}
+
+.sidebar__item:hover,
+.users-sidebar__item:hover {
+  border-color: var(--stroke2);
+}
+
+.sidebar__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.10);
+  margin: 8px 0 12px;
 }
 
 .tasklist {
@@ -657,6 +746,66 @@ pre {
   color: var(--muted2);
 }
 
+.users-page {
+  padding: 20px 0 40px;
+}
+
+.users-page .container {
+  width: min(1500px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.users-layout {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .users-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.users-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.users-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.users-head__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.input--compact {
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.users-panel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.table-wrapper--light {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.users-table--grid th,
+.users-table--grid td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .users-table tr:hover {
   background: rgba(255, 255, 255, 0.04);
 }
@@ -671,4 +820,3 @@ pre {
     transform: translateY(0);
   }
 }
-

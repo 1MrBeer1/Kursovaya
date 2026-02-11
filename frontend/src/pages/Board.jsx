@@ -21,6 +21,7 @@ export default function Board() {
   const [statusOptions, setStatusOptions] = useState([]);
   const [statusNames, setStatusNames] = useState([]);
   const [users, setUsers] = useState([]);
+  const [activeSpace, setActiveSpace] = useState("all"); // all | mine | user-<id>
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -38,6 +39,24 @@ export default function Board() {
     if (fromTasks.length) return fromTasks;
     return FALLBACK_STATUSES;
   }, [statusNames, tasks]);
+
+  const currentUserId = useMemo(() => {
+    if (!user) return null;
+    const found = users.find((u) => u.username === user.username);
+    return found?.id ?? null;
+  }, [user, users]);
+
+  const filteredTasks = useMemo(() => {
+    if (activeSpace === "all") return tasks;
+    if (activeSpace === "mine" && currentUserId) {
+      return tasks.filter((t) => t.assignee_id === currentUserId);
+    }
+    if (activeSpace.startsWith("user-")) {
+      const targetId = Number(activeSpace.replace("user-", ""));
+      return tasks.filter((t) => t.assignee_id === targetId);
+    }
+    return tasks;
+  }, [activeSpace, tasks, currentUserId]);
 
   const loadTasks = async () => {
     const data = await getTasks();
@@ -156,13 +175,25 @@ export default function Board() {
     }));
   };
 
+  // подставляем исполнителя по выбранному пространству
+  useEffect(() => {
+    if (activeSpace.startsWith("user-")) {
+      const targetId = Number(activeSpace.replace("user-", ""));
+      setForm((prev) => ({ ...prev, assignee_id: String(targetId) }));
+    } else if (activeSpace === "mine" && currentUserId) {
+      setForm((prev) => ({ ...prev, assignee_id: String(currentUserId) }));
+    } else {
+      setForm((prev) => ({ ...prev, assignee_id: "" }));
+    }
+  }, [activeSpace, currentUserId]);
+
   return (
     <>
       <div className="topbar">
         <div className="container topbar__inner">
           <div className="brand">
             <div className="brand__title">Task Manager</div>
-            <div className="brand__hint">kanban + drag and drop</div>
+            <div className="brand__hint">Задачи</div>
           </div>
           <div className="topbar__actions">
             <button className="btn btn--ghost" type="button" onClick={() => navigate("/users")}>
@@ -180,120 +211,154 @@ export default function Board() {
         </div>
       </div>
 
-      <div className="board">
-        <div className="container">
-          <div className="board__head">
-            <div>
-              <h1 className="board__title">Доска задач</h1>
-              <div className="board__meta">Всего: {tasks.length}</div>
-            </div>
-            {canCreate && (
+      <div className="board board--with-sidebar">
+        <div className="container board__layout">
+          <aside className="sidebar">
+            <div className="sidebar__title">Пространства</div>
+            <button
+              className="sidebar__item"
+              data-active={activeSpace === "all"}
+              onClick={() => setActiveSpace("all")}
+            >
+              Все задачи
+            </button>
+            {currentUserId && (
               <button
-                className="btn btn--primary"
-                type="button"
-                onClick={() => setCreateOpen((v) => !v)}
+                className="sidebar__item"
+                data-active={activeSpace === "mine"}
+                onClick={() => setActiveSpace("mine")}
               >
-                {createOpen ? "Скрыть форму" : "Новая задача"}
+                Мои задачи
               </button>
             )}
-          </div>
-
-          {canCreate && createOpen && (
-            <div className="panel create">
-              <div className="panel__title">Создать задачу</div>
-              <form className="create__form" onSubmit={handleCreate}>
-                <div className="create__grid">
-                  <div className="field">
-                    <div className="label">Заголовок</div>
-                    <input
-                      className="input"
-                      placeholder="Например: Добавить авторизацию"
-                      value={form.title}
-                      onChange={handleFieldChange("title")}
-                    />
-                  </div>
-                  <div className="field">
-                    <div className="label">Краткое описание</div>
-                    <input
-                      className="input"
-                      placeholder="1-2 предложения"
-                      value={form.short_description}
-                      onChange={handleFieldChange("short_description")}
-                    />
-                  </div>
-                  <div className="field">
-                    <div className="label">Статус</div>
-                    <select
-                      className="input"
-                      value={form.status_id}
-                      onChange={handleFieldChange("status_id")}
-                    >
-                      {statusOptions.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
-                      ))}
-                      {statusOptions.length === 0 && (
-                        <option value="">Статусы недоступны</option>
-                      )}
-                    </select>
-                  </div>
-                  <div className="field">
-                    <div className="label">Исполнитель</div>
-                    <select
-                      className="input"
-                      value={form.assignee_id}
-                      onChange={handleFieldChange("assignee_id")}
-                    >
-                      <option value="">Не назначать</option>
-                      {users.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.username} ({u.role})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="field">
-                  <div className="label">Описание</div>
-                  <textarea
-                    className="textarea"
-                    placeholder="Подробности задачи, критерии готовности, ссылки..."
-                    value={form.description}
-                    onChange={handleFieldChange("description")}
-                  />
-                </div>
-                {createError && <div className="auth-error">{createError}</div>}
-                <div className="auth-actions">
+            <div className="sidebar__divider" />
+            {users.map((u) => (
+              <button
+                key={u.id}
+                className="sidebar__item"
+                data-active={activeSpace === `user-${u.id}`}
+                onClick={() => setActiveSpace(`user-${u.id}`)}
+              >
+                {u.username}
+              </button>
+            ))}
+          </aside>
+          <div className="board__main">
+            <div className="board__head">
+              <div>
+                <h1 className="board__title">Доска задач</h1>
+                <div className="board__meta">Всего: {filteredTasks.length}</div>
+              </div>
+              {canCreate && (
+                <div className="board__actions">
                   <button
-                    className="btn btn--primary"
-                    type="submit"
-                    disabled={creating || statusOptions.length === 0}
+                    className="btn btn--primary btn--wide"
+                    type="button"
+                    onClick={() => setCreateOpen((v) => !v)}
                   >
-                    {creating ? "Создание…" : "Создать задачу"}
+                    {createOpen ? "Скрыть форму" : "Новая задача"}
                   </button>
                 </div>
-              </form>
+              )}
             </div>
-          )}
 
-          <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-            <div className="columns">
-              {statusColumns.map((status) => {
-    const columnTasks = tasks.filter((t) => t.status === status);
+            {canCreate && createOpen && (
+              <div className="panel create">
+                <div className="panel__title">Создать задачу</div>
+                <form className="create__form" onSubmit={handleCreate}>
+                  <div className="create__grid">
+                    <div className="field">
+                      <div className="label">Заголовок</div>
+                      <input
+                        className="input"
+                        placeholder="Например: Добавить авторизацию"
+                        value={form.title}
+                        onChange={handleFieldChange("title")}
+                      />
+                    </div>
+                    <div className="field">
+                      <div className="label">Краткое описание</div>
+                      <input
+                        className="input"
+                        placeholder="1-2 предложения"
+                        value={form.short_description}
+                        onChange={handleFieldChange("short_description")}
+                      />
+                    </div>
+                    <div className="field">
+                      <div className="label">Статус</div>
+                      <select
+                        className="input"
+                        value={form.status_id}
+                        onChange={handleFieldChange("status_id")}
+                      >
+                        {statusOptions.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                        {statusOptions.length === 0 && (
+                          <option value="">Статусы недоступны</option>
+                        )}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <div className="label">Исполнитель</div>
+                      <select
+                        className="input"
+                        value={form.assignee_id}
+                        onChange={handleFieldChange("assignee_id")}
+                      >
+                        <option value="">Не назначать</option>
+                        {users.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.username} ({u.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <div className="label">Описание</div>
+                    <textarea
+                      className="textarea"
+                      placeholder="Подробности задачи, критерии готовности, ссылки..."
+                      value={form.description}
+                      onChange={handleFieldChange("description")}
+                    />
+                  </div>
+                  {createError && <div className="auth-error">{createError}</div>}
+                  <div className="auth-actions">
+                    <button
+                      className="btn btn--primary"
+                      type="submit"
+                      disabled={creating || statusOptions.length === 0}
+                    >
+                      {creating ? "Создание…" : "Создать задачу"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
-                return (
-                  <SortableContext
-                    key={status}
-                    items={columnTasks.map((t) => t.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <Column status={status} tasks={columnTasks} />
-                  </SortableContext>
-                );
-              })}
-            </div>
-          </DndContext>
+            <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+              <div className="columns">
+                {statusColumns.map((status) => {
+                  const columnTasks = filteredTasks.filter((t) => t.status === status);
+
+                  return (
+                    <SortableContext
+                      key={status}
+                      items={columnTasks.map((t) => t.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <Column status={status} tasks={columnTasks} />
+                    </SortableContext>
+                  );
+                })}
+              </div>
+            </DndContext>
+          </div>
         </div>
       </div>
     </>

@@ -36,3 +36,8 @@ export const getStatuses = async () => {
   return res.data;
 };
 
+export const updateTask = async (taskId, payload) => {
+  const res = await api.patch(`/tasks/${taskId}`, payload);
+  return res.data;
+};
+
