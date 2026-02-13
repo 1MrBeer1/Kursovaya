@@ -23,13 +23,26 @@ VENV_DIR="$BACKEND_DIR/.venv"
 BACK_PORT="${BACK_PORT:-8000}"
 FRONT_PORT="${FRONT_PORT:-3000}"
 API_URL="${API_URL:-http://localhost:${BACK_PORT}}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+
+# fallback if python3 missing
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  if command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+  fi
+fi
+
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  echo "Python is not installed or not in PATH. Set PYTHON_BIN env to your python executable."
+  exit 1
+fi
 
 banner() { printf "\n========== %s ==========\n" "$*"; }
 
 ensure_venv() {
   if [[ ! -d "$VENV_DIR" ]]; then
-    python -m venv "$VENV_DIR"
-  end
+    "$PYTHON_BIN" -m venv "$VENV_DIR"
+  fi
   if [[ -x "$VENV_DIR/bin/activate" ]]; then
     source "$VENV_DIR/bin/activate"
   else
