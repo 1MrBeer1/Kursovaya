@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # Универсальный старт для локальной разработки, предпросмотра и Railway.
 # Требования: bash, Python 3, Node.js+npm.
 #
@@ -12,6 +12,7 @@
 #   API_URL     — REACT_APP_API_URL для фронта (default http://localhost:$BACK_PORT)
 #   BACK_PORT   — порт uvicorn (default 8000)
 #   FRONT_PORT  — порт фронта/serve (default 3000)
+#   PYTHON_BIN  — явный путь к python, если в PATH нет
 
 set -euo pipefail
 
@@ -25,19 +26,31 @@ FRONT_PORT="${FRONT_PORT:-3000}"
 API_URL="${API_URL:-http://localhost:${BACK_PORT}}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
-# fallback if python3 missing
-if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
-  if command -v python >/dev/null 2>&1; then
-    PYTHON_BIN="python"
-  fi
-fi
+banner() { printf "\n========== %s ==========\n" "$*"; }
 
-if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+ensure_python() {
+  if command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+    return
+  fi
+  for candidate in python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      PYTHON_BIN="$candidate"
+      return
+    fi
+  done
+
+  echo "Python не найден в PATH, пробую установить..."
+  if command -v apt-get >/dev/null 2>&1; then
+    if command -v sudo >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y python3 python3-venv; else apt-get update -y && apt-get install -y python3 python3-venv; fi || true
+    if command -v python3 >/dev/null 2>&1; then PYTHON_BIN="python3"; return; fi
+  elif command -v apk >/dev/null 2>&1; then
+    apk add --no-cache python3 py3-virtualenv || true
+    if command -v python3 >/dev/null 2>&1; then PYTHON_BIN="python3"; return; fi
+  fi
+
   echo "Python is not installed or not in PATH. Set PYTHON_BIN env to your python executable."
   exit 1
-fi
-
-banner() { printf "\n========== %s ==========\n" "$*"; }
+}
 
 ensure_venv() {
   if [[ ! -d "$VENV_DIR" ]]; then
@@ -67,7 +80,7 @@ install_frontend_deps() {
 start_backend() {
   banner "Starting backend on 0.0.0.0:${BACK_PORT}"
   pushd "$BACKEND_DIR" >/dev/null
-  python -m uvicorn app.main:app --host 0.0.0.0 --port "$BACK_PORT" &
+  "$PYTHON_BIN" -m uvicorn app.main:app --host 0.0.0.0 --port "$BACK_PORT" &
   BACK_PID=$!
   popd >/dev/null
 }
@@ -93,6 +106,7 @@ start_frontend_preview() {
 case "$MODE" in
   dev)
     banner "MODE: dev"
+    ensure_python
     ensure_venv
     install_backend_deps
     install_frontend_deps
@@ -101,6 +115,7 @@ case "$MODE" in
     ;;
   preview)
     banner "MODE: preview"
+    ensure_python
     ensure_venv
     install_backend_deps
     install_frontend_deps
@@ -109,11 +124,12 @@ case "$MODE" in
     ;;
   railway-backend)
     banner "MODE: railway-backend"
+    ensure_python
     ensure_venv
     install_backend_deps
     banner "Starting backend for Railway on 0.0.0.0:${PORT:-8000}"
     pushd "$BACKEND_DIR" >/dev/null
-    python -m uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+    "$PYTHON_BIN" -m uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
     popd >/dev/null
     exit 0
     ;;
@@ -128,8 +144,9 @@ case "$MODE" in
     ;;
   *)
     echo "Unknown mode: $MODE"; exit 1 ;;
-esac
+ esac
 
 banner "Running (backend PID: ${BACK_PID:-N/A}, frontend PID: ${FRONT_PID:-N/A})"
 trap 'echo "Stopping..."; kill ${BACK_PID-} ${FRONT_PID-} 2>/dev/null || true' INT TERM
 wait
+
