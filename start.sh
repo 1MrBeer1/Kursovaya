@@ -1,19 +1,19 @@
-﻿#!/usr/bin/env bash
-# Универсальный старт для локальной разработки, предпросмотра и Railway.
-# Требования: bash, Python 3, Node.js+npm.
+#!/usr/bin/env bash
+# ????????????? ????? ??? ????????? ??????????, ????????????? ? Railway.
+# ??????????: bash, Python 3, Node.js+npm.
 #
-# Режимы:
-#   dev              — uvicorn --reload + npm start
-#   preview          — uvicorn + npm run build + npx serve -s build -l $FRONT_PORT
-#   railway-backend  — только бэкенд (для Railway backend service)
-#   railway-frontend — только фронтенд build+serve (для Railway frontend service)
+# ??????:
+#   dev              ? uvicorn --reload + npm start
+#   preview          ? uvicorn + npm run build + npx serve -s build -l $FRONT_PORT
+#   railway-backend  ? ?????? ?????? (??? Railway backend service)
+#   railway-frontend ? ?????? ???????? build+serve (??? Railway frontend service)
 #
-# Опции окружения:
-#   API_URL     — REACT_APP_API_URL для фронта (default http://localhost:$BACK_PORT)
-#   BACK_PORT   — порт uvicorn (default 8000)
-#   FRONT_PORT  — порт фронта/serve (default 3000)
-#   PYTHON_BIN  — явный путь к python, если в PATH нет
-#   NPM_INSTALL_STRATEGY — ci | install | auto (default auto: ci с fallback на install)
+# ????? ?????????:
+#   API_URL     ? REACT_APP_API_URL ??? ?????? (default http://localhost:$BACK_PORT)
+#   BACK_PORT   ? ???? uvicorn (default 8000)
+#   FRONT_PORT  ? ???? ??????/serve (default 3000)
+#   PYTHON_BIN  ? ????? ???? ? python, ???? ? PATH ???
+#   NPM_INSTALL_STRATEGY ? ci | install | auto (default auto: ci ? fallback ?? install)
 
 set -euo pipefail
 
@@ -41,7 +41,7 @@ ensure_python() {
     fi
   done
 
-  echo "Python не найден в PATH, пробую установить..."
+  echo "Python ?? ?????? ? PATH, ?????? ??????????..."
   if command -v apt-get >/dev/null 2>&1; then
     if command -v sudo >/dev/null 2>&1; then sudo apt-get update -y && sudo apt-get install -y python3 python3-venv; else apt-get update -y && apt-get install -y python3 python3-venv; fi || true
     if command -v python3 >/dev/null 2>&1; then PYTHON_BIN="python3"; return; fi
@@ -58,10 +58,13 @@ ensure_venv() {
   if [[ ! -d "$VENV_DIR" ]]; then
     "$PYTHON_BIN" -m venv "$VENV_DIR"
   fi
-  if [[ -x "$VENV_DIR/bin/activate" ]]; then
+  if [[ -f "$VENV_DIR/bin/activate" ]]; then
     source "$VENV_DIR/bin/activate"
-  else
+  elif [[ -f "$VENV_DIR/Scripts/activate" ]]; then
     source "$VENV_DIR/Scripts/activate"
+  else
+    echo "Virtualenv activation script not found in $VENV_DIR"
+    exit 1
   fi
 }
 
@@ -169,4 +172,3 @@ case "$MODE" in
 banner "Running (backend PID: ${BACK_PID:-N/A}, frontend PID: ${FRONT_PID:-N/A})"
 trap 'echo "Stopping..."; kill ${BACK_PID-} ${FRONT_PID-} 2>/dev/null || true' INT TERM
 wait
-
