@@ -189,7 +189,7 @@ export default function TaskDetails() {
               </button>
             </div>
           ) : (
-            <div className="details__grid">
+            <div className="details__grid details__grid--stack">
               <div className="panel">
                 <div className="panel__title row-between">
                   <span>{task?.title}</span>

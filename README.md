@@ -25,6 +25,9 @@ python run_all.py --mode preview --frontend-port 3000
 
 # если фронт должен ходить на внешний API (туннель/другой хост)
 python run_all.py --mode dev --api-url https://<your-public-backend>
+
+python run_all.py --mode preview --api-url https://frantically-dashing-sheepshead.cloudpub.ru --frontend-port 3000
+
 ```
 Остановка: `Ctrl+C` в том же окне — оба процесса завершаются корректно.
 

@@ -42,6 +42,7 @@ body {
     radial-gradient(800px 520px at 78% 22%, rgba(125, 211, 252, 0.20), transparent 62%),
     radial-gradient(900px 700px at 65% 85%, rgba(134, 239, 172, 0.12), transparent 60%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
+  background-attachment: fixed;
 }
 
 a {
@@ -607,6 +608,18 @@ pre {
   .details__grid {
     grid-template-columns: 1fr;
   }
+}
+
+.details__grid--stack {
+  grid-template-columns: 1fr;
+}
+
+.details__grid--stack > .panel {
+  width: 100%;
+}
+
+.details__grid--stack .panel + .panel {
+  margin-top: 14px;
 }
 
 .panel {

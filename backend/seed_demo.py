@@ -1,6 +1,7 @@
 """Reset SQLite и наполнение демо-данными (пользователи, задачи, чат)."""
 from pathlib import Path
 from datetime import datetime, timedelta
+import random
 
 from app.db.base import Base
 from app.db.session import engine, SessionLocal, DATABASE_URL
@@ -38,9 +39,10 @@ def seed_users(session):
         ("admin", "admin123", "admin"),
         ("ceo", "ceo123", "ceo"),
         ("manager", "manager123", "manager"),
-        ("employee1", "emp123", "employee"),
-        ("employee2", "emp456", "employee"),
     ]
+    # добавим пачку сотрудников
+    for i in range(1, 21):
+        users.append((f"employee{i}", f"emp{i:03}", "employee"))
     created = []
     for username, password, role in users:
         user = User(
@@ -61,64 +63,49 @@ def seed_tasks(session, users):
     u = {usr.username: usr for usr in users}
 
     now = datetime.utcnow()
-    tasks_data = [
-        {
-            "title": "Настроить канбан",
-            "short": "Базовая доска и колонки",
-            "desc": "Создать колонки и проверить dnd.",
-            "status": "сделать",
-            "creator": "manager",
-            "assignee": "manager",
-            "created_at": now - timedelta(days=2),
-        },
-        {
-            "title": "Подключить чат",
-            "short": "Messages API",
-            "desc": "Проверить отправку и чтение сообщений.",
-            "status": "в работе",
-            "creator": "manager",
-            "assignee": "employee1",
-            "created_at": now - timedelta(days=1),
-        },
-        {
-            "title": "UI: список пользователей",
-            "short": "Таблица + сортировка",
-            "desc": "Сделать таблицу с ролями и паролями.",
-            "status": "на проверке",
-            "creator": "ceo",
-            "assignee": "employee2",
-            "created_at": now - timedelta(hours=12),
-        },
-        {
-            "title": "Документация",
-            "short": "PROJEKT.md",
-            "desc": "Собрать описание проекта.",
-            "status": "готово",
-            "creator": "admin",
-            "assignee": "admin",
-            "created_at": now - timedelta(days=3),
-        },
-        {
-            "title": "Общие задачи",
-            "short": "Нет исполнителя",
-            "desc": "Любой может взять.",
-            "status": "сделать",
-            "creator": "manager",
-            "assignee": None,
-            "created_at": now - timedelta(hours=6),
-        },
+    titles = [
+        "Настроить канбан",
+        "Подключить чат",
+        "UI: список пользователей",
+        "Документация",
+        "Рефакторинг API",
+        "Починить drag&drop",
+        "Добавить сортировку",
+        "Фикс авторизации",
+        "Интеграция туннеля",
+        "Тестирование ролей",
+        "Seed demo data",
+        "Градиент фона",
+        "Редактирование задачи",
+        "Список пространств",
+        "Оптимизация запросов",
+        "Деплой preview",
+        "Локализация",
+        "Добавить метки",
+        "Починить CORS",
+        "Таблица пользователей",
+        "Форма создания",
+        "Обновление паролей",
+        "Роли и доступ",
+        "Докеризация",
     ]
 
     tasks = []
-    for t in tasks_data:
+    for i, title in enumerate(titles, start=1):
+        creator = random.choice(["admin", "ceo", "manager"])
+        # иногда без исполнителя, иногда любой сотрудник
+        assignee_choice = random.choice(list(u.keys()) + [None])
+        status_name = random.choice(["сделать", "в работе", "на проверке", "готово"])
         task = Task(
-            title=t["title"],
-            short_description=t["short"],
-            description=t["desc"],
-            status_id=status_by_name[t["status"]].id,
-            created_by=u[t["creator"]].id,
-            assignee_id=u[t["assignee"]].id if t["assignee"] else None,
-            created_at=t["created_at"],
+            title=title,
+            short_description=random.choice(
+                ["Коротко про задачу", "Проверить", "Срочно", "Нормальный приоритет", "Нужно обсудить"]
+            ),
+            description=f"{title}. Детали: auto-generated seed.",
+            status_id=status_by_name[status_name].id,
+            created_by=u[creator].id,
+            assignee_id=u[assignee_choice].id if assignee_choice else None,
+            created_at=now - timedelta(hours=random.randint(1, 120)),
         )
         session.add(task)
         tasks.append(task)
@@ -128,21 +115,35 @@ def seed_tasks(session, users):
 
 def seed_messages(session, tasks, users):
     u = {usr.username: usr for usr in users}
-    messages = [
-        ("manager", tasks[0], "Собрал колонки, осталось стили доделать."),
-        ("employee1", tasks[1], "Я подключил чат, проверь, пожалуйста."),
-        ("manager", tasks[1], "Принял, сейчас протестирую."),
-        ("ceo", tasks[2], "Нужна сортировка по роли, добавьте."),
-        ("employee2", tasks[2], "Добавил сортировку, посмотри."),
+    sample_texts = [
+        "Проверь, пожалуйста.",
+        "Сделано, жду ревью.",
+        "Нужна сортировка по роли.",
+        "Добавил, посмотри.",
+        "Встреча в 15:00.",
+        "Починил drag&drop.",
+        "Добавил автообновление чата.",
+        "Поменял фон, посмотри градиент.",
+        "Готово к деплою.",
+        "Нужен ещё один статус?",
+        "Подправил CORS.",
+        "Обновил README.",
+        "Сделал сиды.",
+        "Проверил роли.",
     ]
-    for username, task, content in messages:
-        session.add(
-            Message(
-                content=content,
-                task_id=task.id,
-                user_id=u[username].id,
+
+    for task in tasks:
+        msg_count = random.randint(5, 20)
+        for _ in range(msg_count):
+            author = random.choice(list(u.values()))
+            text = random.choice(sample_texts)
+            session.add(
+                Message(
+                    content=text,
+                    task_id=task.id,
+                    user_id=author.id,
+                )
             )
-        )
     session.commit()
 
 
