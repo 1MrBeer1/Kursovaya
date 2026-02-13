@@ -13,6 +13,7 @@
 #   BACK_PORT   — порт uvicorn (default 8000)
 #   FRONT_PORT  — порт фронта/serve (default 3000)
 #   PYTHON_BIN  — явный путь к python, если в PATH нет
+#   NPM_INSTALL_STRATEGY — ci | install | auto (default auto: ci с fallback на install)
 
 set -euo pipefail
 
@@ -25,6 +26,7 @@ BACK_PORT="${BACK_PORT:-8000}"
 FRONT_PORT="${FRONT_PORT:-3000}"
 API_URL="${API_URL:-http://localhost:${BACK_PORT}}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
+NPM_INSTALL_STRATEGY="${NPM_INSTALL_STRATEGY:-auto}"
 
 banner() { printf "\n========== %s ==========\n" "$*"; }
 
@@ -69,11 +71,29 @@ install_backend_deps() {
 }
 
 install_frontend_deps() {
-  banner "npm install / ci"
+  banner "npm install (${NPM_INSTALL_STRATEGY})"
   pushd "$FRONTEND_DIR" >/dev/null
-  if [[ ! -d node_modules ]]; then
-    npm ci
-  fi
+  case "$NPM_INSTALL_STRATEGY" in
+    ci)
+      npm ci
+      ;;
+    install)
+      npm install
+      ;;
+    auto)
+      set +e
+      npm ci
+      status=$?
+      set -e
+      if [[ $status -ne 0 ]]; then
+        echo "npm ci failed, falling back to npm install"
+        npm install
+      fi
+      ;;
+    *)
+      npm ci
+      ;;
+  esac
   popd >/dev/null
 }
 
